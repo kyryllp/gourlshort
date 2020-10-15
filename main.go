@@ -2,17 +2,25 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"gourlshort/handler"
-	"net/http"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 )
 
+// no need for this if using docker
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("No .env file found")
+	}
+}
+
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
+	a := App{}
+	a.Initialize(
+		os.Getenv("APP_DB_USERNAME"),
+		os.Getenv("APP_DB_PASSWORD"),
+		os.Getenv("APP_DB_NAME"))
 
-	router.Methods("POST").Path("/urls/create").HandlerFunc(handler.CreateUrl)
-	router.Methods("GET").Path("/urls/{name}").HandlerFunc(handler.GetRedirect)
-
-	fmt.Println("Starting the server.")
-	http.ListenAndServe(":3000", router)
+	fmt.Println("Server is up and running...")
+	a.Run(":8080")
 }
