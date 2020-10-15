@@ -2,6 +2,13 @@
 
 An API written in go, used to shorten urls. A test task for jMindSystems internship.
 
+## Run Locally
+
+- `cp .env.example .env`
+- Insert the credentials in the `.env` file
+- `go build`
+- `./gourlshort`
+
 ## Tasks
 
 - [x] Write an API
