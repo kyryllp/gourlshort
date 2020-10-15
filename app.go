@@ -89,7 +89,7 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) Run(addr string) {
-	log.Fatal(http.ListenAndServe(":8010", a.Router))
+	log.Fatal(http.ListenAndServe(":8080", a.Router))
 }
 
 func (a *App) cacheRequest(req *http.Request) {
