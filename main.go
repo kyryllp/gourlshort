@@ -2,17 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
 
 // no need for this if using docker
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalln("No .env file found")
-	}
-}
+//func init() {
+//	if err := godotenv.Load(); err != nil {
+//		log.Fatalln("No .env file found")
+//	}
+//}
 
 func main() {
 	a := App{}
