@@ -9,11 +9,13 @@ import (
 	"gourlshort/model"
 	"log"
 	"net/http"
+	"time"
 )
 
 type App struct {
 	Router *mux.Router
 	DB     *sql.DB
+	Cache  map[time.Time]*http.Request
 }
 
 func (a *App) Initialize(user, password, dbname string) {
@@ -23,6 +25,8 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Fatal(err)
 	}
 
+	// really feel like this is the wrong way to do it, unfortunately, I couldn't think on the better to do it
+	a.Cache = make(map[time.Time]*http.Request)
 	a.Router = mux.NewRouter()
 
 	a.initializeRoutes()
@@ -77,6 +81,7 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if url.OriginalUrl != "" {
+		a.cacheRequest(r)
 		http.Redirect(w, r, url.OriginalUrl, http.StatusFound)
 	} else {
 		respondWithError(w, http.StatusNotFound, `{"message": "Urls wasn't found in the database"}`)
@@ -85,6 +90,10 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(":8010", a.Router))
+}
+
+func (a *App) cacheRequest(req *http.Request) {
+	a.Cache[time.Now()] = req
 }
 
 func (a *App) initializeRoutes() {
