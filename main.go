@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
+// no need for this if using docker
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalln("No .env file found")
@@ -19,5 +21,6 @@ func main() {
 		os.Getenv("APP_DB_PASSWORD"),
 		os.Getenv("APP_DB_NAME"))
 
-	a.Run(":8010")
+	fmt.Println("Server is up and running...")
+	a.Run(":8080")
 }
