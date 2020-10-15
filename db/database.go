@@ -7,9 +7,9 @@ import (
 	"log"
 )
 
-//todo: initalize func, get everything from environment
 func InitializeConnection(user string, password string, dbname string) (*sql.DB, error) {
-	dataSourceName := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", user, password, dbname)
+	//dataSourceName := fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s", user, password, dbname)
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(db:3306)/%s", user, password, dbname)
 	return sql.Open("mysql", dataSourceName)
 }
 
