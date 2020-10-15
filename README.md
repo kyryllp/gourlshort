@@ -7,6 +7,6 @@ An API written in go, used to shorten urls. A test task for jMindSystems interns
 - [x] Write an API
 - [x] Save in memory (Map)
 - [x] Save to database (Used MySQL)
-- [ ] Unit tests
+- [x] Unit tests
 - [ ] Cache redirect requests
 - [ ] Docker deploy
