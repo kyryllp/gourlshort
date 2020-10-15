@@ -1,30 +1,27 @@
 package db
 
 import (
+	"database/sql"
+	"fmt"
 	"gourlshort/model"
+	"log"
 )
 
-var database = make(map[string]model.URL)
+//todo: initalize func, get everything from environment
+func InitializeConnection(user string, password string, dbname string) (*sql.DB, error) {
+	dataSourceName := fmt.Sprintf("%s:%s@tcp(127.0.0.1:3306)/%s", user, password, dbname)
+	return sql.Open("mysql", dataSourceName)
+}
 
-func FindAll() []model.URL {
-	items := make([]model.URL, 0, len(database))
-	for _, v := range database {
-		items = append(items, v)
+func GetUrl(db *sql.DB, name string) (*sql.Rows, error) {
+	return db.Query("SELECT id, redirect_name, original_url FROM urls WHERE redirect_name = ?", name)
+}
+
+func SaveUrl(db *sql.DB, url model.URL) (sql.Result, error) {
+	stmt, err := db.Prepare("INSERT INTO urls(redirect_name, original_url) VALUES(?, ?)")
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	return items
-}
-
-func FindBy(key string) (model.URL, bool) {
-	url, ok := database[key]
-
-	return url, ok
-}
-
-func Save(key string, item model.URL) {
-	database[key] = item
-}
-
-func Remove(key string) {
-	delete(database, key)
+	return stmt.Exec(url.RedirectName, url.OriginalUrl)
 }

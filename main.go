@@ -2,17 +2,26 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"gourlshort/handler"
-	"net/http"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalln("No .env file found")
+	}
+}
+
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
+	a := App{}
+	fmt.Println(os.Getenv("APP_DB_USERNAME"))
+	fmt.Println(os.Getenv("APP_DB_PASSWORD"))
+	fmt.Println(os.Getenv("APP_DB_NAME"))
+	a.Initialize(
+		os.Getenv("APP_DB_USERNAME"),
+		os.Getenv("APP_DB_PASSWORD"),
+		os.Getenv("APP_DB_NAME"))
 
-	router.Methods("POST").Path("/urls/create").HandlerFunc(handler.CreateUrl)
-	router.Methods("GET").Path("/urls/{name}").HandlerFunc(handler.GetRedirect)
-
-	fmt.Println("Starting the server.")
-	http.ListenAndServe(":3000", router)
+	a.Run(":8010")
 }
