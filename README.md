@@ -17,4 +17,4 @@ An API written in go, used to shorten urls. A test task for jMindSystems interns
 - [x] Save to database (Used MySQL)
 - [x] Unit tests
 - [x] Cache redirect requests
-- [ ] Docker deploy
+- [x] Docker deploy
