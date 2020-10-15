@@ -9,3 +9,4 @@ An API written in go, used to shorten urls. A test task for jMindSystems interns
 - [x] Save to database (Used MySQL)
 - [ ] Unit tests
 - [ ] Cache redirect requests
+- [ ] Docker deploy
