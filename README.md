@@ -8,5 +8,5 @@ An API written in go, used to shorten urls. A test task for jMindSystems interns
 - [x] Save in memory (Map)
 - [x] Save to database (Used MySQL)
 - [x] Unit tests
-- [ ] Cache redirect requests
+- [x] Cache redirect requests
 - [ ] Docker deploy
