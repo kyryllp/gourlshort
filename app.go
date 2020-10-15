@@ -25,7 +25,7 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Fatal(err)
 	}
 
-	// really feel like this is the wrong way to do it, unfortunately, I couldn't think on the better to do it
+	// kyryll: really feel like this is the wrong way to do it, unfortunately, I couldn't think on the better to do it
 	a.Cache = make(map[time.Time]*http.Request)
 	a.Router = mux.NewRouter()
 
@@ -44,6 +44,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+// kyryll: pass the name(yahoo or google) of the new redirect url, not the path (/yahoo or /google)
 func (a *App) createUrl(w http.ResponseWriter, r *http.Request) {
 	var url model.URL
 	decoder := json.NewDecoder(r.Body)
@@ -56,7 +57,7 @@ func (a *App) createUrl(w http.ResponseWriter, r *http.Request) {
 	// saving the url to the database
 	_, err := db.SaveUrl(a.DB, url)
 	if err != nil {
-		log.Fatalln(err)
+		respondWithError(w, http.StatusNotAcceptable, "Duplicate url found")
 	}
 
 	respondWithJSON(w, http.StatusCreated, url)
@@ -70,6 +71,7 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	defer result.Close()
 
 	var url model.URL
@@ -84,7 +86,7 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 		a.cacheRequest(r)
 		http.Redirect(w, r, url.OriginalUrl, http.StatusFound)
 	} else {
-		respondWithError(w, http.StatusNotFound, `{"message": "Urls wasn't found in the database"}`)
+		respondWithError(w, http.StatusNotFound, "No shortened url with this name found.")
 	}
 }
 

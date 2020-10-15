@@ -2,11 +2,14 @@
 
 An API written in go, used to shorten urls. A test task for jMindSystems internship.
 
+## Run in Docker
+- `docker-compose up --build`, should build and run the server
+
 ## Run Locally
 
-- Start mysql, create database and table(`schema.sql`)
+- Create database(`gourlshort`) and table(`schema.sql`)
 - `cp .env.example .env`
-- Insert the credentials in the `.env` file
+- Change the credentials in the `.env` file
 - `go build`
 - `./gourlshort`
 
