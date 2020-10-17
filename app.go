@@ -52,6 +52,12 @@ func (a *App) createUrl(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
+	if url.RedirectName == "" || url.OriginalUrl == "" {
+		// kyryll: for some reason the first if cause didn't work, I added this one
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
 	defer r.Body.Close()
 
 	// saving the url to the database
