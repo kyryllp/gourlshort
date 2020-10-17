@@ -3,6 +3,7 @@ package main_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/joho/godotenv"
 	"gourlshort"
 	"gourlshort/model"
@@ -48,20 +49,38 @@ func clearTable() {
 	}
 }
 
-const tableCreationQuery = `CREATE TABLE IF NOT EXISTS urls
+const (
+	tableCreationQuery = `CREATE TABLE IF NOT EXISTS urls
 (
   id INT AUTO_INCREMENT PRIMARY KEY,
   redirect_name varchar(55) NOT NULL UNIQUE,
   original_url varchar(55) NOT NULL UNIQUE
 )`
+)
 
-func TestGetNonExistentUrl(t *testing.T) {
+func TestCreateUrlInvalidPayload(t *testing.T) {
 	clearTable()
 
-	req, _ := http.NewRequest("GET", "/urls/google", nil)
+	requestBody, err := json.Marshal(map[string]int{
+		"name": 1,
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	req, err := http.NewRequest("POST", "/urls/create", bytes.NewBuffer(requestBody))
+	fmt.Println()
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusNotFound, response.Code)
+	fmt.Println(response.Code)
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+
+	errorMessage := "Invalid request payload"
+	responseError := getResponseError(response)
+	if responseError != errorMessage {
+		t.Errorf("Expected, this error: %s, got: %s", errorMessage, responseError)
+	}
+
 }
 
 func TestCreateUrl(t *testing.T) {
@@ -94,8 +113,44 @@ func TestCreateUrl(t *testing.T) {
 		t.Errorf("Expected redirect name to be 'google', got '%v'", url.RedirectName)
 	}
 	if url.OriginalUrl != "https://google.com" {
-		t.Errorf("Expecter original url to be 'https://google.com', got '%v'", url.OriginalUrl)
+		t.Errorf("Expected original url to be 'https://google.com', got '%v'", url.OriginalUrl)
 	}
+}
+
+func TestCreateDuplicate(t *testing.T) {
+	clearTable()
+	addUrlToDb("yahoo", "https://yahoo.com")
+
+	requestBody, err := json.Marshal(map[string]string{
+		"redirect_name": "yahoo",
+		"original_url":  "https://yahoo.com",
+	})
+	if err != nil {
+		log.Fatalln(err)
+
+	}
+
+
+	req, err := http.NewRequest("POST", "/urls/create", bytes.NewBuffer(requestBody))
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusNotAcceptable, response.Code)
+
+	errorMessage := "Duplicate url found"
+	responseError := getResponseError(response)
+
+	if responseError != errorMessage {
+		t.Errorf("Expected, this error: %s, got: %s", errorMessage, responseError)
+	}
+}
+
+func TestGetNonExistentUrl(t *testing.T) {
+	clearTable()
+
+	req, _ := http.NewRequest("GET", "/urls/google", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
 
 func TestGetUrl(t *testing.T) {
@@ -131,3 +186,12 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	}
 }
 
+func getResponseError(resp *httptest.ResponseRecorder) string {
+	var data map[string]string
+	err := json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return data["error"]
+}

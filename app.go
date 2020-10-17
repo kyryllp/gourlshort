@@ -25,7 +25,7 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Fatal(err)
 	}
 
-	// really feel like this is the wrong way to do it, unfortunately, I couldn't think on the better to do it
+	// kyryll: really feel like this is the wrong way to do it, unfortunately, I couldn't think on a better way
 	a.Cache = make(map[time.Time]*http.Request)
 	a.Router = mux.NewRouter()
 
@@ -44,6 +44,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+// kyryll: pass the name(yahoo or google) of the new redirect url, not the path (/yahoo or /google)
 func (a *App) createUrl(w http.ResponseWriter, r *http.Request) {
 	var url model.URL
 	decoder := json.NewDecoder(r.Body)
@@ -51,12 +52,18 @@ func (a *App) createUrl(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
+	if url.RedirectName == "" || url.OriginalUrl == "" {
+		// kyryll: for some reason the first if cause didn't work, I added this one
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
 	defer r.Body.Close()
 
-	// saving the url to the database
 	_, err := db.SaveUrl(a.DB, url)
 	if err != nil {
-		log.Fatalln(err)
+		respondWithError(w, http.StatusNotAcceptable, "Duplicate url found")
+		return
 	}
 
 	respondWithJSON(w, http.StatusCreated, url)
@@ -66,25 +73,13 @@ func (a *App) getRedirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 
-	result, err := db.GetUrl(a.DB, name)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer result.Close()
-
-	var url model.URL
-	for result.Next() {
-		err := result.Scan(&url.ID, &url.RedirectName, &url.OriginalUrl)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}
-
+	url := db.GetUrl(a.DB, name)
 	if url.OriginalUrl != "" {
 		a.cacheRequest(r)
 		http.Redirect(w, r, url.OriginalUrl, http.StatusFound)
 	} else {
-		respondWithError(w, http.StatusNotFound, `{"message": "Urls wasn't found in the database"}`)
+		respondWithError(w, http.StatusNotFound, "No shortened url with this name found.")
+		return
 	}
 }
 
