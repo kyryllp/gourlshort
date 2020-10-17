@@ -76,9 +76,9 @@ func TestCreateUrlInvalidPayload(t *testing.T) {
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 
 	errorMessage := "Invalid request payload"
-	body := getBodyMap(response)
-	if body["error"] != errorMessage {
-		t.Errorf("Expected, this error: %s, got: %s", errorMessage, body["error"])
+	responseError := getResponseError(response)
+	if responseError != errorMessage {
+		t.Errorf("Expected, this error: %s, got: %s", errorMessage, responseError)
 	}
 
 }
@@ -137,10 +137,10 @@ func TestCreateDuplicate(t *testing.T) {
 	checkResponseCode(t, http.StatusNotAcceptable, response.Code)
 
 	errorMessage := "Duplicate url found"
-	body := getBodyMap(response)
+	responseError := getResponseError(response)
 
-	if body["error"] != errorMessage {
-		t.Errorf("Expected, this error: %s, got: %s", errorMessage, body["error"])
+	if responseError != errorMessage {
+		t.Errorf("Expected, this error: %s, got: %s", errorMessage, responseError)
 	}
 }
 
@@ -186,12 +186,12 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	}
 }
 
-func getBodyMap(resp *httptest.ResponseRecorder) map[string]string {
+func getResponseError(resp *httptest.ResponseRecorder) string {
 	var data map[string]string
 	err := json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return data
+	return data["error"]
 }
