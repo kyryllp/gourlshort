@@ -14,7 +14,8 @@ An API written in go, used to shorten urls. A test task for jMindSystems interns
 - `cp .env.example .env`
 - Change the credentials in the `.env` file
 - Uncomment needed for `init()` function in `main.go` and import modules
-- Install all third party libraries
+- Install all third party libraries, by running `chmod +x install_dependencies.sh && ./install_dependencies.sh`
+- Import them where they're needed
 - `go build`
 - `./gourlshort`
 
